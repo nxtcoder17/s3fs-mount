@@ -7,7 +7,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: spaces-config
-  namespace: com-singlepoint
+  namespace: smaple-namespace
 data:
   BUCKET_NAME: <spaces-bucket-name>
   BUCKET_REGION: <spaces-region-host>
@@ -20,14 +20,13 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: spaces-secret
-  namespace: com-singlepoint
+  namespace: sample-namespace
 type: Opaque
 stringData:
   AWS_ACCESS_KEY_ID: <your-spaces-key>
   AWS_SECRET_ACCESS_KEY: <your-spaces-secret-key>
 
 ```
-
 
 ** Deployment
 
