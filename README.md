@@ -12,7 +12,9 @@ Below is an example, that illustrates my usecase of using s3fs spaces as a sidec
 | MOUNT_DIR             | host file system dir path , where you want the s3 storage mount to be mounted                                                 |
 | PASSWORD_FILE         | this file is output of  `echo $AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY`, it is calculated automatically by this docker image |
 
+```bash
 s3fs $BUCKET_NAME:/$BUCKET_DIR $MOUNT_DIR -o url=https://$BUCKET_URL -o allow_other -o use_path_request_style -o passwd_file=$PASSWORD_FILE
+```
 
 **ConfigMap**
 ```yaml
