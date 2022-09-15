@@ -59,7 +59,7 @@ spec:
   template:
     metadata:
       labels:
-				app: sample-namespace
+        app: sample-namespace
     spec:
       containers:
       - args:

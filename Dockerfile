@@ -1,6 +1,9 @@
 FROM alpine:latest
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories
-RUN cat /etc/apk/repositories
-RUN apk add s3fs-fuse bash
-COPY ./run.sh /
-RUN chmod +x /run.sh
+RUN apk add s3fs-fuse \
+  --repository "https://dl-cdn.alpinelinux.org/alpine/edge/testing/" \
+  --repository "http://dl-cdn.alpinelinux.org/alpine/edge/main" 
+RUN apk add bash
+COPY ./run.sh ./run-in-sidecar.sh /
+RUN chmod +x /run.sh 
+RUN chmod +x /run-in-sidecar.sh
+ENTRYPOINT ["/run.sh"]
