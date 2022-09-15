@@ -1,35 +1,46 @@
 Below is an example, that illustrates my usecase of using s3fs spaces as a sidecar to my kubernetes deployment
 
-** Config Map
+## Usage
 
+| key                   | value                                                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| AWS_ACCESS_KEY_ID     |                                                                                                                               |
+| AWS_SECRET_ACCESS_KEY |                                                                                                                               |
+| BUCKET_NAME           | name of the s3 compatible bucket                                                                                              |
+| BUCKET_DIR            | subpath of s3 bucket which you would like to mount, defaults to /                                                             |
+| BUCKET_URL            | must be something of form `https://{{region}}.{{domain}}`, don't include bucket name in the url, s3fs does not like it        |
+| MOUNT_DIR             | host file system dir path , where you want the s3 storage mount to be mounted                                                 |
+| PASSWORD_FILE         | this file is output of  `echo $AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY`, it is calculated automatically by this docker image |
+
+s3fs $BUCKET_NAME:/$BUCKET_DIR $MOUNT_DIR -o url=https://$BUCKET_URL -o allow_other -o use_path_request_style -o passwd_file=$PASSWORD_FILE
+
+**ConfigMap**
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: spaces-config
-  namespace: smaple-namespace
+  name: s3-config
+  namespace: sample-namespace
 data:
-  BUCKET_NAME: <spaces-bucket-name>
-  BUCKET_REGION: <spaces-region-host>
-  BUCKET_FOLDER: <spaces-folder-on-which-you-want-to-mount>
+  BUCKET_NAME: example-bucket # your bucket name
+  BUCKET_URL: https://sgp1.digitaloceanspaces.com # your bucket url in the same format
+  BUCKET_DIR: /images  # mount example-bucket/images
 ```
 
-** Secret
+**Secret**
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: spaces-secret
+  name: s3-secret
   namespace: sample-namespace
 type: Opaque
 stringData:
   AWS_ACCESS_KEY_ID: <your-spaces-key>
   AWS_SECRET_ACCESS_KEY: <your-spaces-secret-key>
-
 ```
 
-** Deployment
-
+**Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -55,33 +66,12 @@ spec:
           done) && wait'
         command:
         - /bin/sh
-        env:
-        - name: AWSACCESSKEYID
-          valueFrom:
-            secretKeyRef:
-              key: AWS_ACCESS_KEY_ID
-              name: spaces-secret
-        - name: AWSSECRETACCESSKEY
-          valueFrom:
-            secretKeyRef:
-              key: AWS_SECRET_ACCESS_KEY
-              name: spaces-secret
-        - name: BUCKET_NAME
-          valueFrom:
-            configMapKeyRef:
-              key: BUCKET_NAME
-              name: spaces-config
-        - name: BUCKET_REGION
-          valueFrom:
-            configMapKeyRef:
-              key: BUCKET_REGION
-              name: spaces-config
-        - name: BUCKET_FOLDER
-          valueFrom:
-            configMapKeyRef:
-              key: BUCKET_FOLDER
-              name: spaces-config
-        image: nxtcoder17/s3fs-spaces:6
+        envFrom:
+          - secretRef:
+              name: s3-secret
+          - configMapRef:
+              name: s3-config
+        image: nxtcoder17/s3fs-spaces:7
         imagePullPolicy: Always
         name: spaces-sidecar
         resources:
